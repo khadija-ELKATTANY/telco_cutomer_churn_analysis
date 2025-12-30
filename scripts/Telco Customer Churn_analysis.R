@@ -196,3 +196,133 @@ ggsave("plots/09_totalcharges_by_churn.png", plot9, width = 8, height = 6)
 print("Plot9: Total Changes by churn saved")
 
 
+##correlation Matrix
+correlation_data <- telco_data %>%
+  select(tenure, MonthlyCharges, TotalCharges) %>%
+  cor()
+png("plots/10_correlation_matrix.png", width = 800, height = 600)
+corrplot(correlation_data, method = "color", type = "upper",
+         addCoef.col = "black", tl.col = "black",
+         title = "Correlation Matrix: Numerical Variables", 
+         mar = c(0,0,1,0))
+dev.off()
+print("plot10: correlation matrix saved")
+
+
+#tenure group analysis
+telco_data$tenure_group <- cut(telco_data$tenure,
+                               breaks = c(-Inf, 12, 24, 48, Inf),
+                               labels = c("0-12 months", "13-24 months", "24-48 months", "49+ months"))
+
+plot11 <- ggplot(telco_data, aes(x= tenure_group, fill = Churn))+
+  geom_bar(position = "fill",alpha=0.8)+
+  scale_fill_manual(values = c("No"= "#3498db", "Yes" = "#e74c3c"))+
+  labs(title = "Churn Rate by Tenure Group",
+       x= "Tenure Group",
+       y="Propotion")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  scale_y_continuous(labels = percent_format())
+ggsave("plots/11_Churn_by_tenure_group.png", width = 10, height = 6)
+print("Plot11: Churn by Tenure Group saved")
+
+
+#churn rates by different factors
+churn_by_internet <- telco_data %>%
+  group_by(InternetService) %>%
+  summarise(
+    Total = n(),
+    Churned = sum(Churn == "Yes"),
+    Churn_rate = round(Churned / Total *100, 2)
+  )
+###churn rate by internet service
+print(churn_by_internet)
+
+
+churn_by_contract <- telco_data %>%
+  group_by(Contract) %>%
+  summarise(
+    Total = n(),
+    Churned = sum(Churn == "Yes"),
+    Churn_rate = round(Churned / Total *100, 2)
+  )
+###churn rate by contract
+print(churn_by_contract)
+
+churn_by_payment <- telco_data %>%
+  group_by(PaymentMethod) %>%
+  summarise(
+    Total = n(),
+    Churned = sum(Churn == "Yes"),
+    Churn_rate = round(Churned / Total *100, 2)
+  )
+### churn by payment method
+print(churn_by_payment)
+
+
+#tenure group analysis
+churn_by_tenure_group <- telco_data %>%
+  group_by(tenure_group) %>%
+  summarise(
+    Total = n(),
+    Churned = sum(Churn == "Yes"),
+    Churn_rate = round(Churned / Total *100, 2)
+  )
+###churn rate by tenure group  
+print(churn_by_tenure_group)
+
+
+
+#statistical Test
+##chi-square test for Contract type and churn
+contract_churn_test <- chisq.test(table(telco_data$Contract, telco_data$Churn))
+#Chi-square statistic
+round(contract_churn_test$statistic, 4)
+#P-value
+format.pval(contract_churn_test$p.value, digits = 4)
+
+
+##chi-square test for Internet service and churn
+internet_churn_test <-chisq.test(table(telco_data$InternetService, telco_data$Churn))
+#chi-square statistic
+round(internet_churn_test$statistic,4)
+#p-value
+format.pval(internet_churn_test$p.value, digits=4)
+
+
+#T-test for tenure difference between churned and non-churned
+tenure_churn_test <- t.test(tenure ~ Churn, data = telco_data)
+round(tenure_churn_test$statistic, 4)
+format.pval(tenure_churn_test$p.value, digits = 4)
+
+
+#T-test for monthlycharges difference between churned and non-churned
+charges_churn_test <- t.test(MonthlyCharges ~Churn, data = telco_data)
+round(charges_churn_test$statistic, 4)
+format.pval(charges_churn_test$p.value, digits = 4)
+
+#OverAll Statistics
+total_customers <- nrow(telco_data)
+total_churned <- sum(telco_data$Churn == "Yes")
+overall_churn_rate <- round(total_churned / total_customers * 100,2)
+
+cat("Overall Statistics: ")
+cat("Total Customers: ",total_customers)
+cat("Total Churned: ", total_churned)
+cat("Overall Churn Rate: ", overall_churn_rate)
+
+
+#average tenure and charges by churn status
+cat("Average Metrics by churn status: ")
+avg_metrics <- telco_data %>%
+  group_by(Churn) %>%
+  summarise(
+    Avg_Tenure = round(mean(tenure),1),
+    Avg_Monthly_charges = round(mean(MonthlyCharges), 2),
+    Avg_Total_Charges = round(mean(TotalCharges), 2),
+    count= n()
+  )
+print(avg_metrics)
+
+
+#high risk segments
