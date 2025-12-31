@@ -326,3 +326,31 @@ print(avg_metrics)
 
 
 #high risk segments
+cat("High-Risk Segments")
+
+#Contract type risk
+churn_by_contract
+high_risk_contract <- churn_by_contract$Contract[which.max(churn_by_contract$Churn_rate)]
+
+high_risk_rate <- max(churn_by_contract$Churn_rate)
+
+cat("Highest churn contract type: ", high_risk_contract, "(", high_risk_rate, ")")
+
+
+#internet service risk
+churn_by_internet
+high_risk_internet <- churn_by_internet$InternetService[which.max(churn_by_internet$Churn_rate)]
+high_risk_internet_rate <- max(churn_by_internet$Churn_rate)
+cat("Highest churn internet service: ", high_risk_internet ,"(", high_risk_internet_rate, ")")
+
+
+#payment method risk
+churn_by_payment
+high_risk_payment <- churn_by_payment$PaymentMethod[which.max(churn_by_payment$Churn_rate)]
+high_risk_payment_rate <- max(churn_by_payment$Churn_rate)
+cat("Highest churn payment method: ", high_risk_payment, "(", high_risk_payment_rate, ")")
+
+
+##Tenure analysis
+cat("Tenure Analysis: ")
+tenure_quantiles <- quantile(telco_data$tenure, probs = c(0.25,0.5,0.75))
