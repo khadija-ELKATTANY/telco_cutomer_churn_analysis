@@ -354,3 +354,7 @@ cat("Highest churn payment method: ", high_risk_payment, "(", high_risk_payment_
 ##Tenure analysis
 cat("Tenure Analysis: ")
 tenure_quantiles <- quantile(telco_data$tenure, probs = c(0.25,0.5,0.75))
+cat("Tenure quantiles: ")
+cat("Q1:", tenure_quantiles[1], "months")
+cat("Q2 (Median):", tenure_quantiles[2], "months")
+cat("Q3:", tenure_quantiles[3], "months")
